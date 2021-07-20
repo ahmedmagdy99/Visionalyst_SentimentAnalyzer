@@ -10,11 +10,13 @@ import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
+from wordcloud import WordCloud, STOPWORDS
 
 class Analysis():
-    def hashtag_analysis(tweets):
+    def hashtag_analysis(all_reviews):
+        tweets = all_reviews[all_reviews['platform'] == 'twitter']
         hashtags = []
-        for tweet in tweet_df['tweet']:
+        for tweet in tweets['review']:
             ht = re.findall(r"#(\w+)", tweet)
             hashtags.append(ht)
 
@@ -30,7 +32,7 @@ class Analysis():
 
         return js
 
-    def location_analysis(tweets):
+    def location_analysis(all_reviews):
         states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
                   'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
                   'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',
@@ -56,8 +58,9 @@ class Analysis():
                         'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin',
                         'WY': 'Wyoming'}
 
-        tweet_location_df = tweet_df
-        for index, row in tweet_df.iterrows():
+        tweets = all_reviews[all_reviews['platform'] == 'twitter']
+        tweet_location_df = tweets
+        for index, row in tweets.iterrows():
             flag = 0
             if row.location:
                 locationSplit = row.location.split(',')
@@ -81,3 +84,10 @@ class Analysis():
 
         js = d.to_json(orient='records')
         return js
+
+    def wordcloud(all_reviews):
+        tweets = all_reviews[all_reviews['platform'] == 'twitter']
+        words = ''
+        stopwords = set(STOPWORDS)
+        words = ' '.join([tweet for tweet in tweets['review']])
+        return words

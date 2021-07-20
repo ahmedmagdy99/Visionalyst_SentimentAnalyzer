@@ -7,24 +7,26 @@ import regex as re
 from datetime import datetime
 import TwitterAuthenticator as ta
 import CleanData as clean
+import datetime
 
 class DataRetrieval():
     def Tweets(self, text_query):
         self.auth = ta.TwitterAuthenticator().authenticate_twitter_app()
-        api = tweepy.API(self.auth)
+        api = tweepy.API(self.auth, wait_on_rate_limit=True)
         query = text_query + " -filter:retweets"
-        tweets = tweepy.Cursor(api.search, q=query, since='2021-07-14', until='2021-07-18', lang='en',
+        now = datetime.datetime.now()
+        now_date = now.strftime("%Y-%m-%d 00:00:00")
+        week = datetime.timedelta(days=8)
+        since = now - week
+        since_date = since.strftime("%Y-%m-%d 00:00:00")
+        tweets = tweepy.Cursor(api.search, q = query, since = since_date, until = now_date, lang='en',
                                tweet_mode="extended").items(50)
         tweet_details = [
             [tweet.created_at, tweet.full_text, tweet.user.screen_name, tweet.user.location] for
             tweet in tweets
         ]
-        tweet_df = pd.DataFrame(data=tweet_details, columns=['date', 'tweet', 'user', 'location'])
-
-        tweet_df["tweet"] = tweet_df["tweet"].map(clean.remove_urls)
-        tweet_df["tweet"] = tweet_df["tweet"].map(clean.clean_html)
-        tweet_df["tweet"] = tweet_df["tweet"].map(clean.clean_mentions_and_endline)
-        tweet_df = tweet_df[['tweet']]
+        tweet_df = pd.DataFrame(data=tweet_details, columns=['date', 'review', 'name', 'location'])
+        tweet_df['date'] = pd.to_datetime(tweet_df['date']).dt.date
 
         return tweet_df
 
@@ -81,6 +83,7 @@ class DataRetrieval():
             for item in reviews:
                 try:
                     review = {
+                        'name': item.find('div', {'class': 'a-profile-content'}).text,
                         'review': item.find('span', {'data-hook': 'review-body'}).text.rstrip('\n'),
                         'date': item.find('span', {'data-hook': 'review-date'}).text.strip(),
                     }
@@ -123,12 +126,21 @@ class DataRetrieval():
         df = pd.DataFrame(reviewlist)
 
         df['date'] = df['date'].str.extract(r'on (\w+ \d+, \d+)')
-        df['date'] = pd.to_datetime(df['date'])
-
-        df["review"] = df["review"].map(clean.remove_urls)
-        df["review"] = df["review"].map(clean.clean_html)
-        df["review"] = df["review"].map(clean.clean_mentions_and_endline)
+        df['date'] = pd.to_datetime(df['date']).dt.date
 
         return df
+
+    def get_all_reviews(self, text_query):
+        tweets = self.Tweets(text_query)
+        amazon = self.amazon_reviews(text_query)
+        tweets['platform'] = 'twitter'
+        amazon['platform'] = 'amazon'
+        all_reviews = amazon.append(tweets)
+        all_reviews["review"] = all_reviews["review"].map(clean.remove_urls)
+        all_reviews["review"] = all_reviews["review"].map(clean.clean_html)
+        all_reviews["review"] = all_reviews["review"].map(clean.clean_mentions_and_endline)
+
+
+        return all_reviews
 
 

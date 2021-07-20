@@ -22,6 +22,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 # import joblib
 from joblib import dump
@@ -77,17 +78,17 @@ count_vectorizer = CountVectorizer(stop_words = 'english')
 # Transform the training data using only the 'text' column values: count_train
 count_train = count_vectorizer.fit_transform(x)
 
-dt = DecisionTreeClassifier(criterion='entropy', random_state=1)
+rf_clf = RandomForestClassifier()
 
 # Fit the classifier to the training data
-dt.fit(count_train, y)
+rf_clf.fit(count_train, y)
 
 # define the stages of the pipeline
 pipeline = Pipeline(steps= [('CountVectorizer', CountVectorizer(stop_words = 'english')),
-                            ('model', DecisionTreeClassifier(criterion='entropy', random_state=1))])
+                            ('model', RandomForestClassifier())])
 
 # fit the pipeline model with the training data
 pipeline.fit(x, y)
 
 # dump the pipeline model
-dump(pipeline, filename="visionalyst_classifier_dt.joblib")
+dump(pipeline, filename="visionalyst_classifier_rf.joblib")

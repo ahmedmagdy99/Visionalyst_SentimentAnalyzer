@@ -32,7 +32,7 @@ from joblib import load
 text = ["Charger is not working", "I loved this product", 'I hated this product', "Good Product"]
 
 # load the saved pipleine model
-pipeline = load("visionalyst_classifier_dt.joblib")
+pipeline = load("visionalyst_classifier_rf.joblib")
 
 df = pd.read_csv('Amazon_Mobile.csv')
 df = df[:100]
