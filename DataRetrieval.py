@@ -14,12 +14,12 @@ class DataRetrieval():
         self.auth = ta.TwitterAuthenticator().authenticate_twitter_app()
         api = tweepy.API(self.auth, wait_on_rate_limit=True)
         query = text_query + " -filter:retweets"
-        now = datetime.datetime.now()
-        now_date = now.strftime("%Y-%m-%d 00:00:00")
-        week = datetime.timedelta(days=8)
-        since = now - week
-        since_date = since.strftime("%Y-%m-%d 00:00:00")
-        tweets = tweepy.Cursor(api.search, q = query, since = since_date, until = now_date, lang='en',
+        # now = datetime.datetime.now()
+        # now_date = now.strftime("%Y-%m-%d 00:00:00")
+        # week = datetime.timedelta(days=8)
+        # since = now - week
+        # since_date = since.strftime("%Y-%m-%d 00:00:00")
+        tweets = tweepy.Cursor(api.search, q = query, lang='en',
                                tweet_mode="extended").items(50)
         tweet_details = [
             [tweet.created_at, tweet.full_text, tweet.user.screen_name, tweet.user.location] for
@@ -139,7 +139,6 @@ class DataRetrieval():
         all_reviews["review"] = all_reviews["review"].map(clean.remove_urls)
         all_reviews["review"] = all_reviews["review"].map(clean.clean_html)
         all_reviews["review"] = all_reviews["review"].map(clean.clean_mentions_and_endline)
-
 
         return all_reviews
 

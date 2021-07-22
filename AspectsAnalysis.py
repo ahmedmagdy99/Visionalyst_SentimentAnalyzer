@@ -29,17 +29,27 @@ class AspectsAnalysis():
 
         return ""
 
-    def get_nouns_setiment(nouns_list, data):
+    def get_nouns_sentiment(nouns_list, data):
         sen = []
         tex = []
+        count = []
         for i in nouns_list:
             pos = 0
             neg = 0
             for j in range(len(data)):
                 if i in data.loc[j]['review']:
-                    tex.append(i)
-                    sen.append(data.loc[j]['sentiment'])
-        return tex, sen
+                    if data.loc[j]['sentiment'] == 'positive':
+                        pos += 1
+                    if data.loc[j]['sentiment'] == 'negative':
+                        neg += 1
+
+            tex.append(i)
+            tex.append(i)
+            sen.append("positive")
+            sen.append("negative")
+            count.append(pos)
+            count.append(neg)
+        return tex, sen, count
 
     def get_aspects(self, data):
         data = data['review']
@@ -55,14 +65,11 @@ class AspectsAnalysis():
         for i in range(len(aspect_list)):
             new_dic[aspect_list[i]] = dic.get(aspect_list[i])
         new_dic = {k: v for k, v in new_dic.items() if v is not None}
-        noun, sentiment = self.get_nouns_setiment(list(new_dic.keys())[:8], data)
-        dataSentiment = pd.DataFrame({'word': noun, 'sentiment': sentiment})
-        sentimentCount = dataSentiment.value_counts()
-        js = sentimentCount.to_json(orient='records')
-        dataJson = json.loads(js)
-        freq = nltk.FreqDist(sentimentCount.index)
-        d = pd.DataFrame({'word': list(freq.keys()), 'Count': dataJson})
-        json_data = d.to_json(orient='records')
-        return json_data
+        noun, sentiment, count = self.get_nouns_sentiment(list(new_dic.keys())[:6], data)
+        dataSentiment = pd.DataFrame({'word': noun, 'sentiment': sentiment, 'count': count})
+
+        js = dataSentiment.to_json(orient='records')
+
+        return js
 
 

@@ -28,9 +28,11 @@ class Analysis():
                           'Count': list(freq.values())})
 
         d = d.nlargest(columns='Count', n=15)
-        js = d.to_json(orient='records')
+        # js = d.to_json(orient='records')
+        labels = d.Hashtag.tolist()
+        counts = d.Count.tolist()
 
-        return js
+        return labels, counts
 
     def location_analysis(all_reviews):
         states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
